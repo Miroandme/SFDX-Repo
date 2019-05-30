@@ -1,0 +1,83 @@
+mkdir my_sfdx_project
+cd my_sfdx_project
+git clone https://github.com/dreamhouseapp/dreamhouse-sfdx.git
+cd dreamhouse-sfdx
+Cloning the repository pulls all the source code into your local file 
+system. But before you start editing, you first create your own branch.
+ This is a best practice as defined by GitHub Flow, because it helps 
+ ensure your Master branch is a clean and production-ready 
+ version of your code.
+Create a Branch for Your Project:
+- git checkout -b my_branch
+
+NOW WE WILL CREATE A SCRATCH Org
+- cat config/project-scratch-def.json
+OUTPUT
+  {
+    "orgName": "Dreamhouse",
+    "edition": "Developer",
+    "hasSampleData": "false",
+    "settings": {
+      "orgPreferenceSettings": {
+        "s1DesktopEnabled": true,
+        "selfSetPasswordInApi": true,
+        "s1EncryptedStoragePref2": false
+      }
+    }
+}
+----------------------------------------------------------------
+Next, use the following command to create the scratch org, set it as 
+your default, and give it an alias
+   sfdx force:org:
+   create -s -f config/project-scratch-def.json -a dreamhouse-org
+
+OUTPUT
+   Successfully created scratch org: 00D0R0000004trdUAA, username: test-z8ei2k8tvpz2@example.com
+   --------------------------------------------
+   sfdx force:org:open
+   At this point we have a brand-new empty scratch org. Next we p
+   opulate it with the source we first pulled out of GitHub. For this, 
+    the source synchronization APIs, also available in the CLI.
+------------------------------------
+
+sfdx force:source:push 
+     -It takes a few moments, but all the metadata is pushed into the scratch org. 
+------------
+sfdx force:user:permset:assign -n Dreamhouse
+---------------
+But wait a minute… we don’t have any of the DreamHouse app data in the 
+org. Luckily, we do have sample data in our repository. Let’s use the
+CLI and the SObject Tree API to import this data into the org. 
+-------------------------
+sfdx force:data:tree:import --plan data/sample-data-plan.json
+Test Your App in the Scratch Org
+----------------------------
+GeoAppScratch   test-aujmzqbppog8@example.com
+geolocation     test-dqzrmvodsdol@example.com
+DevHub          techintversion@miro.com
+dreamhouse-org  test-z8ei2k8tvpz2@example.com
+
+
+
+
+
+
+Create a scaratch org
+- sfdx force:org:create -s -f config/project-scratch-def.json -a dreamhouse-org
+my scratch orgs info:
+--Starting SFDX: Authorize a Dev Hub
+
+15:20:59.291 sfdx force:auth:web:login --setdefaultdevhubusername
+Successfully authorized techintversion@miro.com with org ID 00D2E000000oYdHUAU
+You may now close the browser
+15:21:07.756 sfdx force:auth:web:login --setdefaultdevhubusername ended with exit code 0
+
+Starting SFDX: Create a Default Scratch Org...
+
+15:30:19.708 sfdx force:org:create -f config/project-scratch-def.json --setalias geolocation --durationdays 30 --setdefaultusername
+Successfully created scratch org: 00D1D000000DJv6UAG, username: test-dqzrmvodsdol@example.com
+15:30:40.84 sfdx force:org:create -f config/project-scratch-def.json --setalias geolocation --durationdays 30 --setdefaultusername ended with exit code 0
+-------------------------------------
+JUST usefull command 1 apex test run
+sfdx force:apex:test:run --resultformat human
+-----------------

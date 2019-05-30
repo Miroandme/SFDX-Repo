@@ -1,0 +1,193 @@
+Create a Project and Scratch Org
+    Note:Part of the beauty of the package development model is 
+    that you isolate each development project you’re working on in its own space
+    Note: This scratch org simulates what you can already have in a sandbox or production org
+    When you are done you cana delepte this Scratch Org
+Install unmanaged packacge to the Scratch Org
+ - sfdx force:project:create -n MutualFundExplorer
+Changing the directory to the project directory MutualFundExplorer
+ - cd MutualFundExplorer  
+We need to create a scratch org with the alias TempUnmanaged
+ Before creating authorize the org you want to login.
+ Authorize your Dev Hub on the same folder directory where you will create your scratch org.
+  - sfdx force:auth:web:login -d -a DevHub
+  ******below command is not in use in my project.
+   - sfdx force:auth:web:login
+  Then  Create a scratch org with the alias TempUnmanaged
+  - sfdx force:org:create -f config/project-scratch-def.json -a TempUnmanaged
+When you create a scratch org, certain values are automatically set for the org.
+View the configuration data for the scratch org:
+- sfdx force:org:display -u TempUnmanaged
+OUTPUT
+   === Org Description
+KEY              VALUE
+───────────────  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Access Token     00DS0000003OjP7!ARcAQO0e8JPaeX3.af0P2S5gbHEEfkBWDzNbFfyR0AxG3qaTLyj5jYch53Tl1tVNaVGBO4mD0lWnpWmHA5sumeCSfz1dLhd8
+Alias            TempUnmanaged
+Client Id        PlatformCLI
+Created By       techintversion@miro.com
+Created Date     2019-05-30T05:11:58.000+0000
+Dev Hub Id       techintversion@miro.com
+Edition          Developer
+Expiration Date  2019-06-06
+Id               00DS0000003OjP7MAK
+Instance Url     https://speed-momentum-7667-dev-ed.cs1.my.salesforce.com/
+Org Name         mirandabaghashvili Company
+Status           Active
+Username         test-ftujgkovqebe@example.com
+-----------------------------------------------------------------------------
+Notice that the output provides the Instance URL, which is the 
+My Domain value for the scratch org. You need this, along with the username and password, to install the package.
+----------------------------------------------------------
+  Create a password:
+  - sfdx force:user:password:generate -u TempUnmanaged
+  Reissue the org:display command to see all the required values to install the package:
+  - sfdx force:org:display -u  TempUnmanaged
+  OUTPUT === Org Description
+KEY              VALUE
+───────────────  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Access Token     00DS0000003OjP7!ARcAQO0e8JPaeX3.af0P2S5gbHEEfkBWDzNbFfyR0AxG3qaTLyj5jYch53Tl1tVNaVGBO4mD0lWnpWmHA5sumeCSfz1dLhd8
+Alias            TempUnmanaged
+Client Id        PlatformCLI
+Created By       techintversion@miro.com
+Created Date     2019-05-30T05:11:58.000+0000
+Dev Hub Id       techintversion@miro.com
+Edition          Developer
+Expiration Date  2019-06-06
+Id               00DS0000003OjP7MAK
+Instance Url     https://speed-momentum-7667-dev-ed.cs1.my.salesforce.com/
+Org Name         mirandabaghashvili Company
+Password         6Xq*w[(602
+Status           Active
+───────────── ───────────── ───────────── ───────────── ───────────── ─────────────
+Install the Unmanaged Package
+-****- With the username, password, and instance URL, you can now log in to the UI 
+       vfor installing the unmanaged package for the Mutual Fund Explorer app, which is called DreamInvest.
+       note:To make sure you install the package in the correct org, log out of any existing orgs.
+Browse to this URL. (unmanaged package from appExchange)
+https://login.salesforce.com/packaging/installPackage.apexp?p0=04t46000001DnYm
+Choose 
+use Domain Name
+Enter USRL from org:display info. Remove http://
+in case we don't see this option use:
+login with different user name 
+Enter user name and password from org:display
+install package and review
+NEXT:
+Create the Permission Set
+For Label, enter DreamInvest.
+Click Save.
+Under Apps, click Assigned Apps | Edit.
+Under Available Apps, select DreamInvest (DreamInvest), then click Add to move it to Enabled Apps.
+Click Save.
+----------------------------------------------------------------
+Now, let’s extract this permission set into our source
+Run the following command in the CLI:
+- sfdx force:source:pull -u TempUnmanaged
+OUTPUT 
+=== Pulled Source
+STATE  FULL NAME    TYPE           PROJECT PATH
+─────  ───────────  ─────────────  ────────────────────────────────────────────────────────────────────────
+Add    DreamInvest  PermissionSet  force-app/main/default/
+----------------------------------------------------------------
+Extract the Package Source to Your Project
+Next, convert the source format back to metadata format. 
+The conversion process is straightforward and only involves a few commands.
+Create a folder to put the converted files called mdapioutput.
+ - mkdir mdapioutput
+ The next step is to pull the existing application out of the org. 
+ There are many ways to do this task. You can create a package.xml file 
+ and pull your source using the Metadata API retrieve method. 
+ If you already have your source stored in VCS, you can use the method 
+ you prefer. In this unit, we’ll use CLI commands for the Metadata API to retrieve the contents of a package.
+ - sfdx force:mdapi:retrieve -s -r ./mdapipackage -p DreamInvest -u TempUnmanaged -w 10
+OUTPUT this.retrieveTargetPath: /Users/Shared/MutualFundExplorer/mdapipackage
+Retrieving source...
+
+=== Status
+Status:  InProgress
+jobid:  09SS0000002KzrEMAS
+
+
+=== Result
+Status:  Succeeded
+jobid:  09SS0000002KzrEMAS
+
+Wrote retrieve zip to /Users/Shared/MutualFundExplorer/mdapipackage/unpackaged.zip.
+--------------------------------------------------------------------
+Change to the mdapipackage folder and verify that the unpackaged.zip file appears.
+Unzip the file:
+ - unzip unpackaged.zip -d 
+ Delete the unpackaged.zip file:
+ - rm unpackaged.zip
+Now you have all the source for the app in metadata format. 
+Next, convert the source files to source format. 
+----------------------------------------------------------------------
+Why do we convert the metadata source to source format? 
+Metadata format was never designed for developers to work with. 
+It’s stored in one massive file in the production org. 
+Source format breaks up the metadata into smaller files. 
+This makes it easier for development teams to interact with the source and use a VCS.
+Fortunately, conversion is easy—there’s a command for that!
+
+From the MutualFundExplorer folder, convert the contents of the mdapipackage folder:
+  - sfdx force:mdapi:convert -r mdapipackage/
+
+Convert the Source and Push It to a New Scratch Org
+ Next, run the convert command:
+ - sfdx force:source:convert -d mdapioutput/
+ We'll see the following output:
+ Source was successfully converted to Metadata API format and written 
+ to the location: /Users/Shared/MutualFundExplorer/mdapioutput
+--------------------------------------------------------------
+Now, your source is in a format that works with the Metadata API
+Deploy it to your testing environment:
+  - sfdx force:mdapi:deploy -d mdapioutput/ -u MyTP -w 100
+Clean up your project by deleting the Metadata API source:
+ - rm -rf mdapipackage
+Delete the scratch org:
+ - sfdx force:org:delete -u TempUnmanaged
+ ----------------------------------------------------
+ Verify Your Work
+ Did all of that work? The easiest way to find that out is to spin up a new scratch org and try it out. 
+ Since you didn’t create this app, you’ll assign a permission set that gives you access to the app.
+Create a new scratch org:
+ - sfdx force:org:create -s -f config/project-scratch-def.json
+ Notice the command sets this new scratch org to be the default for this project. 
+ This way, any commands you issue are run against this scratch org.
+ 
+ Push your local source and metadata to the scratch org:
+  - sfdx force:source:push
+  Assign a permission set:
+   - sfdx force:user:permset:assign -n DreamInvest 
+   Open your org:
+   - sfdx force:org:open
+   At this point, everything works! You’ve fully converted the app. 
+   If you were going to continue to work on this app, you’d commit 
+   the current source into your VCS and continue your development.
+   ------------------------------------------------------------------
+   Register Your Testing Environment
+   -*******-
+    For future reference, if you want to follow these steps in your production org, 
+    follow the instructions in the User Authentication module to enable My Domain. 
+    Otherwise, your Lightning components won't deploy.
+      ------------------------------------------------------------------
+   Log in to your Trailhead Playground org and create an alias for it.
+   
+  - sfdx force:auth:web:login -a MyTestingEnv
+Successfully authorized einsteinmiro@gmail.com with org ID 00D2E000000nwiQUAQ
+You may now close the browser
+---------------------------------------------------------
+Convert Source to Metadata Format and Deploy
+- mkdir mdapioutput
+Next, run the convert command:
+ - sfdx force:source:convert -d mdapioutput/
+ Now, your source is in a format that works with the Metadata API.
+Deploy it to your testing environment:
+sfdx force:mdapi:deploy -d mdapioutput/ -u MyTestingEnv -w 100
+Assign a permission set:
+ - sfdx force:user:permset:assign -n DreamInvest -u MyTestingEnv
+ -*****- Be sure to indicate the -u flag to open the correct org. 
+         If you forget the username option, this command opens the scratch 
+         org you indicated as the default.
+         
